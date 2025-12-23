@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>笔试题库分析报告</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    
+    <!-- 内联数据区 -->
+    <script>
+        // 样例题目数据（前10道）
+        const sampleQuestions = [
+            {"序号": 1, "题目": "V9多联机可以搭配V8平台所有室内机使用。", "题型": "是非题", "选项A": "是", "选项B": "否", "选项C": "", "选项D": "", "选项E": "", "答案": "B"},
+            {"序号": 2, "题目": "V9多联机可以和V8标准系列室外机组合使用。", "题型": "是非题", "选项A": "是", "选项B": "否", "选项C": "", "选项D": "", "选项E": "", "答案": "B"},
+            {"序号": 3, "题目": "V9多联机全系列采用美的自主研发的喷气增焓涡旋式压缩机。", "题型": "是非题", "选项A": "是", "选项B": "否", "选项C": "", "选项D": "", "选项E": "", "答案": "A"},
+            {"序号": 4, "题目": "V9多联机电控盒防护等级IP68需要在出厂前定制实现。", "题型": "是非题", "选项A": "是", "选项B": "否", "选项C": "", "选项D": "", "选项E": "", "答案": "A"},
+            {"序号": 5, "题目": "美的V9多联机全系列采用三相平衡无零线设计，行业首创。", "题型": "是非题", "选项A": "是", "选项B": "否", "选项C": "", "选项D": "", "选项E": "", "答案": "A"},
+            {"序号": 6, "题目": "V9多联机单模块最大制冷量为()kW。", "题型": "单选题", "选项A": "22.4", "选项B": "28.0", "选项C": "33.5", "选项D": "36.0", "选项E": "", "答案": "D"},
+            {"序号": 7, "题目": "V9多联机单模块最大制热量为()kW。", "题型": "单选题", "选项A": "25.0", "选项B": "30.0", "选项C": "35.0", "选项D": "40.0", "选项E": "", "答案": "C"},
+            {"序号": 8, "题目": "V9多联机最小组合容量为()kW。", "题型": "单选题", "选项A": "22.4", "选项B": "28.0", "选项C": "33.5", "选项D": "44.8", "选项E": "", "答案": "A"},
+            {"序号": 9, "题目": "V9多联机最大组合容量为()kW。", "题型": "单选题", "选项A": "132", "选项B": "160", "选项C": "180", "选项D": "200", "选项E": "", "答案": "B"},
+            {"序号": 10, "题目": "V9多联机的噪音水平在低风档时可低至()dB(A)。", "题型": "单选题", "选项A": "22", "选项B": "25", "选项C": "28", "选项D": "32", "选项E": "", "答案": "B"}
+        ];
+
+        // 题型分布数据
+        const typeDistribution = {
+            "单选题": 242,
+            "是非题": 125,
+            "多选题": 123
+        };
+
+        // 选项数量分布数据
+        const optionDistribution = {
+            "是非题(2选项)": 125,
+            "单选题(4选项)": 240,
+            "单选题(5选项)": 12,
+            "多选题(4选项)": 102,
+            "多选题(5选项)": 20
+        };
+
+        // 是非题答案分布数据
+        const trueFalseAnswers = {
+            "正确": 54,
+            "错误": 52,
+            "A": 6,
+            "B": 5,
+            "否": 4,
+            "是": 1,
+            "对": 1
+        };
+    </script>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
+    <!-- 页面头部 -->
+    <header class="bg-white shadow-lg border-b-4 border-blue-500">
+        <div class="container mx-auto px-6 py-8">
+            <div class="text-center">
+                <h1 class="text-4xl font-bold text-gray-800 mb-2">
+                    <i class="fas fa-chart-bar text-blue-600 mr-3"></i>
+                    笔试题库分析报告
+                </h1>
+                <p class="text-lg text-gray-600">基于492道题目的全面数据分析</p>
+                <div class="mt-4 flex justify-center space-x-8 text-sm text-gray-500">
+                    <span><i class="fas fa-calendar-alt mr-1"></i>生成时间: <span id="currentDate"></span></span>
+                    <span><i class="fas fa-database mr-1"></i>题目总数: 492道</span>
+                    <span><i class="fas fa-tags mr-1"></i>题型数量: 3种</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-6 py-8">
+        <!-- 概览统计卡片 -->
+        <section class="mb-12">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+                <i class="fas fa-tachometer-alt text-green-600 mr-3"></i>
+                题库概览
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-white rounded-xl shadow-lg p-6 border-l-4 border-blue-500 hover:shadow-xl transition-shadow duration-300">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-600">单选题</p>
+                            <p class="text-3xl font-bold text-blue-600">242</p>
+                            <p class="text-xs text-gray-500 mt-1">占比 49.2%</p>
+                        </div>
+                        <div class="bg-blue-100 p-3 rounded-full">
+                            <i class="fas fa-check-circle text-blue-600 text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-xl shadow-lg p-6 border-l-4 border-green-500 hover:shadow-xl transition-shadow duration-300">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-600">是非题</p>
+                            <p class="text-3xl font-bold text-green-600">125</p>
+                            <p class="text-xs text-gray-500 mt-1">占比 25.4%</p>
+                        </div>
+                        <div class="bg-green-100 p-3 rounded-full">
+                            <i class="fas fa-balance-scale text-green-600 text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-xl shadow-lg p-6 border-l-4 border-purple-500 hover:shadow-xl transition-shadow duration-300">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-600">多选题</p>
+                            <p class="text-3xl font-bold text-purple-600">123</p>
+                            <p class="text-xs text-gray-500 mt-1">占比 25.0%</p>
+                        </div>
+                        <div class="bg-purple-100 p-3 rounded-full">
+                            <i class="fas fa-th-list text-purple-600 text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 可视化图表区域 -->
+        <section class="mb-12">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+                <i class="fas fa-chart-pie text-purple-600 mr-3"></i>
+                数据分析可视化
+            </h2>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- 题型分布饼状图 -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                        <i class="fas fa-chart-pie text-blue-600 mr-2"></i>
+                        题型分布
+                    </h3>
+                    <div class="relative h-80">
+                        <canvas id="typeChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- 选项数量分布柱状图 -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                        <i class="fas fa-chart-bar text-green-600 mr-2"></i>
+                        选项数量分布
+                    </h3>
+                    <div class="relative h-80">
+                        <canvas id="optionChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 是非题答案分析 -->
+        <section class="mb-12">
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                    <i class="fas fa-balance-scale text-orange-600 mr-2"></i>
+                    是非题答案分布
+                </h3>
+                <div class="relative h-64">
+                    <canvas id="trueFalseChart"></canvas>
+                </div>
+                <div class="mt-4 text-sm text-gray-600 bg-yellow-50 p-4 rounded-lg">
+                    <i class="fas fa-exclamation-triangle text-yellow-600 mr-2"></i>
+                    <strong>注意：</strong>是非题答案格式不统一，包含"正确"、"错误"、"是"、"否"、"对"等多种格式，需要进一步标准化。
+                </div>
+            </div>
+        </section>
+
+        <!-- 样例题目表格 -->
+        <section class="mb-12">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+                <i class="fas fa-table text-indigo-600 mr-3"></i>
+                样例题目数据
+            </h2>
+            <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">序号</th>
+                                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">题目</th>
+                                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">题型</th>
+                                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">选项A</th>
+                                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">选项B</th>
+                                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">选项C</th>
+                                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">选项D</th>
+                                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">答案</th>
+                            </tr>
+                        </thead>
+                        <tbody id="sampleTableBody" class="bg-white divide-y divide-gray-200">
+                            <!-- 动态填充 -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- 数据分析总结 -->
+        <section class="mb-12">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+                <i class="fas fa-lightbulb text-yellow-600 mr-3"></i>
+                数据分析总结
+            </h2>
+            <div class="bg-white rounded-xl shadow-lg p-8">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                            <i class="fas fa-check-circle text-green-600 mr-2"></i>
+                            优势分析
+                        </h3>
+                        <ul class="space-y-3 text-gray-700">
+                            <li class="flex items-start">
+                                <i class="fas fa-arrow-right text-green-500 mr-2 mt-1"></i>
+                                <span><strong>题目数量充足：</strong>共492道题目，覆盖面广</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-arrow-right text-green-500 mr-2 mt-1"></i>
+                                <span><strong>题型分布合理：</strong>单选题占比49.2%，是非题25.4%，多选题25.0%</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-arrow-right text-green-500 mr-2 mt-1"></i>
+                                <span><strong>选项结构完整：</strong>大部分题目选项设置规范</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                            <i class="fas fa-exclamation-triangle text-yellow-600 mr-2"></i>
+                            改进建议
+                        </h3>
+                        <ul class="space-y-3 text-gray-700">
+                            <li class="flex items-start">
+                                <i class="fas fa-arrow-right text-yellow-500 mr-2 mt-1"></i>
+                                <span><strong>补充难度信息：</strong>当前93.5%的题目缺少难度标识</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-arrow-right text-yellow-500 mr-2 mt-1"></i>
+                                <span><strong>统一答案格式：</strong>是非题答案格式不统一，需要标准化</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-arrow-right text-yellow-500 mr-2 mt-1"></i>
+                                <span><strong>完善缺失数据：</strong>有2道题目的题型和答案缺失</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="mt-8 p-6 bg-blue-50 rounded-lg border-l-4 border-blue-500">
+                    <h4 class="text-lg font-semibold text-blue-800 mb-3 flex items-center">
+                        <i class="fas fa-info-circle text-blue-600 mr-2"></i>
+                        关键发现
+                    </h4>
+                    <p class="text-blue-700 leading-relaxed">
+                        该题库主要聚焦于空调多联机产品知识，题目类型以单选题为主，是非题和多选题数量相对均衡。
+                        从样例题目可以看出，题库内容专业性较强，主要涉及产品技术参数、性能特点、使用方法等方面。
+                        建议在后续维护中，重点补充难度分级信息，统一答案格式，并对缺失数据进行完善，以提高题库的规范性和可用性。
+                    </p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="bg-gray-800 text-white py-8">
+        <div class="container mx-auto px-6 text-center">
+            <p class="text-gray-400">
+                <i class="fas fa-chart-line mr-2"></i>
+                笔试题库分析报告 - 基于492道题目的专业数据分析
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        // 设置当前日期
+        document.getElementById('currentDate').textContent = new Date().toLocaleDateString('zh-CN');
+
+        // 填充样例题目表格
+        function populateSampleTable() {
+            const tbody = document.getElementById('sampleTableBody');
+            sampleQuestions.forEach((question, index) => {
+                const row = tbody.insertRow();
+                row.className = index % 2 === 0 ? 'bg-white' : 'bg-gray-50';
+                
+                const typeColor = {
+                    '单选题': 'bg-blue-100 text-blue-800',
+                    '是非题': 'bg-green-100 text-green-800',
+                    '多选题': 'bg-purple-100 text-purple-800'
+                };
+
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${question.序号}</td>
+                    <td class="px-6 py-4 text-sm text-gray-900 max-w-xs truncate" title="${question.题目}">${question.题目}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${typeColor[question.题型] || 'bg-gray-100 text-gray-800'}">
+                            ${question.题型}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${question.选项A}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${question.选项B}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${question.选项C || '-'}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${question.选项D || '-'}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                            ${question.答案}
+                        </span>
+                    </td>
+                `;
+            });
+        }
+
+        // 创建题型分布饼状图
+        function createTypeChart() {
+            const ctx = document.getElementById('typeChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: Object.keys(typeDistribution),
+                    datasets: [{
+                        data: Object.values(typeDistribution),
+                        backgroundColor: [
+                            '#3B82F6',
+                            '#10B981',
+                            '#8B5CF6'
+                        ],
+                        borderWidth: 2,
+                        borderColor: '#ffffff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 20,
+                                usePointStyle: true
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = ((context.parsed / total) * 100).toFixed(1);
+                                    return `${context.label}: ${context.parsed}题 (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 创建选项数量分布柱状图
+        function createOptionChart() {
+            const ctx = document.getElementById('optionChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(optionDistribution),
+                    datasets: [{
+                        label: '题目数量',
+                        data: Object.values(optionDistribution),
+                        backgroundColor: [
+                            '#10B981',
+                            '#3B82F6',
+                            '#60A5FA',
+                            '#8B5CF6',
+                            '#A78BFA'
+                        ],
+                        borderColor: [
+                            '#059669',
+                            '#2563EB',
+                            '#3B82F6',
+                            '#7C3AED',
+                            '#8B5CF6'
+                        ],
+                        borderWidth: 1,
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: '#F3F4F6'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 创建是非题答案分布柱状图
+        function createTrueFalseChart() {
+            const ctx = document.getElementById('trueFalseChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(trueFalseAnswers),
+                    datasets: [{
+                        label: '题目数量',
+                        data: Object.values(trueFalseAnswers),
+                        backgroundColor: '#F59E0B',
+                        borderColor: '#D97706',
+                        borderWidth: 1,
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: '#F3F4F6'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            populateSampleTable();
+            createTypeChart();
+            createOptionChart();
+            createTrueFalseChart();
+        });
+    </script>
+</body>
+</html>
